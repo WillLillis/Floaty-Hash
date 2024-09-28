@@ -34,13 +34,13 @@ impl F32Wrapper {
     fn to_bin_str(self) -> String {
         let mut s = String::new();
         let sign_bit = self.sign_bit();
-        s += &format!("0b{}", if sign_bit { 1 } else { 0 });
+        s += &format!("0b{}", i32::from(sign_bit));
 
         for bit in self.exponent_bits() {
-            s += &format!("{}", if bit { 1 } else { 0 });
+            s += &format!("{}", i32::from(bit));
         }
         for bit in self.mantissa_bits() {
-            s += &format!("{}", if bit { 1 } else { 0 });
+            s += &format!("{}", i32::from(bit));
         }
         s
     }
@@ -91,6 +91,7 @@ impl Hash for F32Wrapper {
                     raw_exp += 2i32.pow(i);
                 }
             }
+            #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
             let exp = raw_exp - F32_EXPONENT_BIAS as i32;
             2.0f64.powi(exp)
         };
