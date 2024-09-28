@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 use std::usize;
 
 const F32_ERROR_TOLERANCE: f32 = 0.00001;
-const F32_WIDTH: usize = 32;
+const F32_BITS: usize = 32;
 const F32_EXPONENT_BITS: usize = 8;
 const F32_EXPONENT_BIAS: usize = 127;
 const F32_MANTISA_BITS: usize = 23;
@@ -32,26 +32,32 @@ impl F32Wrapper {
 
     #[allow(dead_code)]
     fn to_bin_str(self) -> String {
-        let mut s = String::new();
-        let sign_bit = self.sign_bit();
-        s += &format!("0b{}", i32::from(sign_bit));
-
-        for bit in self.exponent_bits() {
-            s += &format!("{}", i32::from(bit));
+        fn bit_to_char(bit: bool) -> char {
+            if bit {
+                '1'
+            } else {
+                '0'
+            }
         }
-        for bit in self.mantissa_bits() {
-            s += &format!("{}", i32::from(bit));
-        }
+        let mut s = String::with_capacity(34); // "0b" + 32 bits
+        s.push_str("0b");
+        s.push(bit_to_char(self.sign_bit()));
+        self.exponent_bits()
+            .iter()
+            .for_each(|bit| s.push(bit_to_char(*bit)));
+        self.mantissa_bits()
+            .iter()
+            .for_each(|bit| s.push(bit_to_char(*bit)));
         s
     }
 
     fn sign_bit(self) -> bool {
-        (self.to_bits() & (1 << (F32_WIDTH - 1))) != 0
+        (self.to_bits() & (1 << (F32_BITS - 1))) != 0
     }
 
     fn exponent_bits(self) -> [bool; F32_EXPONENT_BITS] {
         let bits = self.to_bits();
-        let mut bit_selector = 1 << (F32_WIDTH - 1 - 1);
+        let mut bit_selector = 1 << (F32_BITS - 1 - 1);
         let mut mantissa_bits = [false; F32_EXPONENT_BITS];
 
         for bit in mantissa_bits.iter_mut().take(F32_EXPONENT_BITS) {
@@ -63,7 +69,7 @@ impl F32Wrapper {
 
     fn mantissa_bits(self) -> [bool; F32_MANTISA_BITS] {
         let bits = self.to_bits();
-        let mut bit_selector = 1 << (F32_WIDTH - 1 - 1 - F32_EXPONENT_BITS);
+        let mut bit_selector = 1 << (F32_BITS - 1 - 1 - F32_EXPONENT_BITS);
         let mut mantissa_bits = [false; F32_MANTISA_BITS];
 
         for bit in mantissa_bits.iter_mut().take(F32_MANTISA_BITS) {
