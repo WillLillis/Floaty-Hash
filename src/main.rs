@@ -128,7 +128,7 @@ fn main() {
     floats.insert(f4);
     println!("Inserting {} and {}...", f3.inner, f4.inner);
     println!(
-        "(Note that |{} - {}| = {} > {})",
+        "(Note that |{} - {}| = {} < {})",
         f3.inner,
         f4.inner,
         (f3.inner - f4.inner).abs(),
