@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
+use std::usize;
 
 const F32_ERROR_TOLERANCE: f32 = 0.00001;
 const F32_WIDTH: usize = 32;
@@ -86,7 +87,9 @@ impl Hash for F32Wrapper {
         let mut multiplicative_exponent: f64 = {
             let mut raw_exp: i32 = 0;
             for i in 0..f32::DIGITS {
-                raw_exp += 2i32.pow(i);
+                if exponent_bits[i as usize] {
+                    raw_exp += 2i32.pow(i);
+                }
             }
             let exp = raw_exp - F32_EXPONENT_BIAS as i32;
             2.0f64.powi(exp)
@@ -134,7 +137,10 @@ fn main() {
         (f3.inner - f4.inner).abs(),
         F32_ERROR_TOLERANCE
     );
-    println!("Number of items in the hash set: {} (I'm so sorry)", floats.len());
+    println!(
+        "Number of items in the hash set: {} (I'm so sorry)",
+        floats.len()
+    );
 }
 
 #[test]
@@ -150,6 +156,17 @@ fn it_treats_pos_and_neg_zero_the_same() {
 }
 #[test]
 fn it_treats_close_pos_numbers_as_the_same_1() {
+    let num_1 = F32Wrapper::new(42.0);
+    let num_2 = F32Wrapper::new(42.0 - F32_ERROR_TOLERANCE / 2.0);
+
+    let mut set = HashSet::new();
+    set.insert(num_1);
+    set.insert(num_2);
+
+    assert!(set.len() == 1);
+}
+#[test]
+fn it_treats_close_pos_numbers_as_the_same_2() {
     let num_1 = F32Wrapper::new(42.0);
     let num_2 = F32Wrapper::new(42.0 + F32_ERROR_TOLERANCE / 2.0);
 
@@ -182,20 +199,9 @@ fn it_treats_close_neg_numbers_as_the_same_1() {
     assert!(set.len() == 1);
 }
 #[test]
-fn it_treats_close_pos_numbers_as_the_same_2() {
-    let num_1 = F32Wrapper::new(42.0);
-    let num_2 = F32Wrapper::new(42.0 - F32_ERROR_TOLERANCE / 2.0);
-
-    let mut set = HashSet::new();
-    set.insert(num_1);
-    set.insert(num_2);
-
-    assert!(set.len() == 1);
-}
-#[test]
 fn it_treats_non_close_pos_numbers_as_different_1() {
     let num_1 = F32Wrapper::new(42.0);
-    let num_2 = F32Wrapper::new(42.0 + F32_ERROR_TOLERANCE * 2.0);
+    let num_2 = F32Wrapper::new(42.0 - F32_ERROR_TOLERANCE * 2.0);
 
     let mut set = HashSet::new();
     set.insert(num_1);
@@ -206,7 +212,7 @@ fn it_treats_non_close_pos_numbers_as_different_1() {
 #[test]
 fn it_treats_non_close_neg_numbers_as_different_2() {
     let num_1 = F32Wrapper::new(-42.0);
-    let num_2 = F32Wrapper::new(-42.0 - F32_ERROR_TOLERANCE * 2.0);
+    let num_2 = F32Wrapper::new(-42.0 + F32_ERROR_TOLERANCE * 2.0);
 
     let mut set = HashSet::new();
     set.insert(num_1);
@@ -217,7 +223,7 @@ fn it_treats_non_close_neg_numbers_as_different_2() {
 #[test]
 fn it_treats_non_close_neg_numbers_as_different_1() {
     let num_1 = F32Wrapper::new(-42.0);
-    let num_2 = F32Wrapper::new(-42.0 + F32_ERROR_TOLERANCE * 2.0);
+    let num_2 = F32Wrapper::new(-42.0 - F32_ERROR_TOLERANCE * 2.0);
 
     let mut set = HashSet::new();
     set.insert(num_1);
@@ -228,7 +234,7 @@ fn it_treats_non_close_neg_numbers_as_different_1() {
 #[test]
 fn it_treats_non_close_pos_numbers_as_different_2() {
     let num_1 = F32Wrapper::new(42.0);
-    let num_2 = F32Wrapper::new(42.0 - F32_ERROR_TOLERANCE * 2.0);
+    let num_2 = F32Wrapper::new(42.0 + F32_ERROR_TOLERANCE * 2.0);
 
     let mut set = HashSet::new();
     set.insert(num_1);
