@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use std::usize;
 
 const F32_ERROR_TOLERANCE: f32 = 0.00001;
 const F32_BITS: usize = 32;
@@ -114,7 +113,7 @@ impl Hash for F32Wrapper {
     }
 }
 
-// This kind of works but not really, there are definitely plenty of
+// Kind of works but not really, there are definitely plenty of
 // cases where this just breaks silently
 fn main() {
     let mut floats = HashSet::new();
@@ -130,6 +129,7 @@ fn main() {
 
     println!("Ok well that makes sense, let's clear out those values");
     floats.clear();
+    println!("Number of items in the hash set: {}", floats.len());
 
     println!("How about this?");
     let f3 = F32Wrapper::new(42.0);
